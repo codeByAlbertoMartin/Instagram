@@ -13,7 +13,7 @@ class UserProfile(models.Model):
     #symmetrical=False significa que la relación no es simétrica, es decir, si A sigue a B, no significa que B siga a A.
     #through='Follow' indica que la relación se gestiona a través de un modelo intermedio llamado Follow (se crea sola)
     
-    #followers = models.ManyToManyField("self", symmetrical=False, related_name='following', through='Follow')
+    followers = models.ManyToManyField("self", symmetrical=False, related_name='following', through='Follow')
 
     class Meta:
         verbose_name = "Perfil"
@@ -21,3 +21,18 @@ class UserProfile(models.Model):
     
     def __str__(self):
         return self.user
+    
+class Follow(models.Model):
+    follower = models.ForeignKey(UserProfile, verbose_name="¿Quién sigue?", on_delete=models.CASCADE, related_name='follower_set')
+    following= models.ForeignKey(UserProfile, verbose_name="¿A quién sigue?", on_delete=models.CASCADE, related_name='following_set')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="¿Desde cuándo lo sigue?")
+
+    class Meta:
+        verbose_name = "Seguidor"
+        verbose_name_plural = "Seguidores"
+        unique_together = ('follower', 'following')
+
+    def __str__(self):
+        return f"{self.follower} sigue a {self.following}"
+    
+    
