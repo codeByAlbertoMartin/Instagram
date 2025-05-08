@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 # Create your models here.
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    profile_pocture = models.ImageField("Imagen de perfil", upload_to="profile_pictures/", blank=True, null=True)
+    profile_picture = models.ImageField("Imagen de perfil", upload_to="profile_pictures/", blank=True, null=True)
     bio = models.TextField("Biografía", blank=True, null=True)
     birth_date = models.DateField("Fecha de nacimiento", blank=True, null=True)
     
@@ -20,7 +20,7 @@ class UserProfile(models.Model):
         verbose_name_plural = "Perfiles"
     
     def __str__(self):
-        return self.user
+        return self.user.username
     
 class Follow(models.Model):
     follower = models.ForeignKey(UserProfile, verbose_name="¿Quién sigue?", on_delete=models.CASCADE, related_name='follower_set')
