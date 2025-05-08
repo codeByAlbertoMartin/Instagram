@@ -10,3 +10,4 @@ class PostAdmin(admin.ModelAdmin):
 @admin.register(Comment)
 class ComentarioAdmin(admin.ModelAdmin):
     list_display = ['post','user', 'created_at']
+
