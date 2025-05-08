@@ -6,12 +6,13 @@ from django.shortcuts import HttpResponseRedirect
 # reverse_lazy se utiliza para redirigir a una vista que no existe en el momento de la carga de la vista
 # reverse se utiliza para redirigir a una vista que existe en el momento de la carga de la vista
 from django.urls import reverse_lazy, reverse
-from django.views.generic import TemplateView
-from django.views.generic.edit import CreateView,FormView
+from django.views.generic import TemplateView, DetailView
+from django.views.generic.edit import CreateView,FormView, UpdateView
 from  django.contrib.auth.models import User
 from .forms import RegistrationForm, LoginForm
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
+from profiles.models import UserProfile
 
 class HomeView(TemplateView):
     template_name = "general/home.html"
@@ -46,6 +47,27 @@ class RegisterView(CreateView):
         messages.add_message(self.request, messages.SUCCESS, 'Usuario creado correctamente')
         form.save()
         return super(RegisterView, self).form_valid(form)
+
+
+class ProfileDetailView(DetailView):
+    template_name = "general/profile_detail.html"
+    model=UserProfile
+    context_object_name = 'profile'
+
+
+class ProfileUpdateView(UpdateView):
+    template_name = "general/profile_update.html"
+    model=UserProfile
+    context_object_name = 'profile'
+    fields = ['profile_picture', 'bio', 'birth_date']
+
+    def form_valid(self, form):
+        messages.add_message(self.request, messages.SUCCESS, 'Usuario actualizado correctamente')
+        form.save()
+        return super(ProfileUpdateView, self).form_valid(form)
+    
+    def get_success_url(self):
+        return reverse('profile_detail', kwargs={'pk': self.object.pk})
 
 
 class LegalView(TemplateView):

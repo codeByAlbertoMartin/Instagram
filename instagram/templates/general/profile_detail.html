@@ -1,0 +1,21 @@
+{% extends "general/layout.html" %}
+
+{% block head_title %}Bienvenidos a nuestro InstaConquer{% endblock%}
+
+{% block page_content %}
+<div class="container">
+    <h1>Mi perfil</h1>
+    <p>Biografia: {{profile.bio|default_if_none:"Sin rellenar"}}</p>
+    <p>Fecha de nacimiento: {{profile.birth_date|default_if_none:"Sin rellenar"}}</p>
+    <p>
+        {% if profile.profile_picture %}
+            <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" style="width: 150px; height: 150px;">
+        {% else %}
+            <p>Sin foto de perfil</p>
+        {% endif %}
+    </p>
+    <p>Seguidores: {{ profile.followers.count }}</p>
+    <button><a href="{% url 'profile_update' profile.pk %}">Editar</a></button>
+</div>
+
+{% endblock %}
