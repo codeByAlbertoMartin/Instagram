@@ -6,17 +6,16 @@ from django.shortcuts import HttpResponseRedirect
 # reverse_lazy se utiliza para redirigir a una vista que no existe en el momento de la carga de la vista
 # reverse se utiliza para redirigir a una vista que existe en el momento de la carga de la vista
 from django.urls import reverse_lazy, reverse
-from django.views.generic import TemplateView, DetailView
+from django.views.generic import TemplateView, DetailView, ListView
 from django.views.generic.edit import CreateView,FormView, UpdateView
 from  django.contrib.auth.models import User
-from .forms import RegistrationForm, LoginForm
+from .forms import RegistrationForm, LoginForm, ProfileFollow
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from profiles.models import UserProfile
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from posts.models import Post
-
 
 class HomeView(TemplateView):
     template_name = "general/home.html"
@@ -62,10 +61,29 @@ class RegisterView(CreateView):
         return super(RegisterView, self).form_valid(form)
 
 @method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
-class ProfileDetailView(DetailView):
+class ProfileDetailView(DetailView, FormView):
     template_name = "general/profile_detail.html"
     model=UserProfile
     context_object_name = 'profile'
+    form_class= ProfileFollow
+
+    def form_valid(self, form):
+        profile_pk = form.cleaned_data.get("profile_pk")
+        profile = UserProfile.objects.get(pk=profile_pk)
+        self.request.user.profile.follow(profile)
+        
+        messages.add_message(self.request, messages.SUCCESS, 'Has seguido a este usuario')
+        return HttpResponseRedirect(reverse('profile_detail', kwargs={'pk': self.request.user.profile.pk}))
+
+
+@method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
+class ProfileListView(ListView):
+    template_name = "general/profile_list.html"
+    model=UserProfile
+    context_object_name = 'profiles'
+
+    def get_queryset(self):
+        return UserProfile.objects.exclude(user=self.request.user)
 
 @method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
 class ProfileUpdateView(UpdateView):
@@ -81,6 +99,16 @@ class ProfileUpdateView(UpdateView):
     
     def get_success_url(self):
         return reverse('profile_detail', kwargs={'pk': self.object.pk})
+    
+    #Sirve para comprobar si el usuario que quiere editar el perfil es el mismo que el que lo creó
+    #Ademas redirecciona a la pagina de inicio si no es el mismo usuario, porque podria ser un fallo de seguridad si un
+    #usuario intenta editar el perfil de otro usuario si conciera la URL
+    def dispatch(self, request, *args, **kwargs):
+        user_profile = self.get_object()
+        if user_profile.user != self.request.user:
+            messages.add_message(request, messages.ERROR, 'No tienes permiso para editar este perfil')
+            return HttpResponseRedirect(reverse('home'))
+        return super().dispatch(request, *args, **kwargs)
 
 
 class LegalView(TemplateView):
