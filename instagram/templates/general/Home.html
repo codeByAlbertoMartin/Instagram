@@ -4,9 +4,16 @@
 
 {% block page_content%}
 <div class="container">
-    <h1>Homepage</h1>
-    <p>Este es el contenido de la página de Home</p>
-    que mas puedo añadir
+    <h1 align="center">Homepage</h1>
+    <p>Bienvenidos a nuestro InstaConquer, la mejor plataforma para compartir tus fotos y videos favoritos de Instagram.</p>
+    <section>
+        <h2>Últimas publicaciones</h2>
+        {% for post in last_posts %}
+            {% include '_includes/posts/_post.html' %}
+            <hr class="hr">
+        {% endfor %}
+    </section>
+   
 </div>
 
 {% endblock %}
