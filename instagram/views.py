@@ -13,9 +13,22 @@ from .forms import RegistrationForm, LoginForm
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from profiles.models import UserProfile
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
+from posts.models import Post
+
 
 class HomeView(TemplateView):
     template_name = "general/home.html"
+
+
+    def get_context_data(self, **kwargs):
+        context = super(HomeView, self).get_context_data(**kwargs)
+        
+        last_posts = Post.objects.all().order_by('-created_at')[:5]
+        context['last_posts'] = last_posts
+
+        return context
 
 
 class LoginView(FormView):
@@ -48,13 +61,13 @@ class RegisterView(CreateView):
         form.save()
         return super(RegisterView, self).form_valid(form)
 
-
+@method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
 class ProfileDetailView(DetailView):
     template_name = "general/profile_detail.html"
     model=UserProfile
     context_object_name = 'profile'
 
-
+@method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
 class ProfileUpdateView(UpdateView):
     template_name = "general/profile_update.html"
     model=UserProfile

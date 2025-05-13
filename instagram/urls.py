@@ -19,7 +19,8 @@ from django.urls import path
 from .views import HomeView, LoginView, RegisterView, LegalView, \
     ContactView, logout_view, ProfileDetailView, ProfileUpdateView
 from django.conf.urls.static import static
-from django.conf import settings
+from django.conf import settings # type: ignore
+from posts.views import PostCreateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,5 +31,6 @@ urlpatterns = [
     path('legal/', LegalView.as_view(), name='legal'),
     path('profile/<pk>/', ProfileDetailView.as_view(), name='profile_detail'),
     path("profile/update/<pk>/", ProfileUpdateView.as_view(), name="profile_update"),
+    path("post/create/", PostCreateView.as_view(), name="post_create"),
     path('contact/', ContactView.as_view(), name='contact'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
