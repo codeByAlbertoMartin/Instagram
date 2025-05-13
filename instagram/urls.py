@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from .views import HomeView, LoginView, RegisterView, LegalView, \
-    ContactView, logout_view, ProfileDetailView, ProfileUpdateView
+    ContactView, logout_view, ProfileDetailView, ProfileUpdateView, ProfileListView
 from django.conf.urls.static import static
 from django.conf import settings # type: ignore
 from posts.views import PostCreateView
@@ -29,6 +29,7 @@ urlpatterns = [
     path('logout/',logout_view, name='logout'),
     path('register/', RegisterView.as_view(), name='register'),
     path('legal/', LegalView.as_view(), name='legal'),
+    path('profile/list/', ProfileListView.as_view(), name='profile_list'),
     path('profile/<pk>/', ProfileDetailView.as_view(), name='profile_detail'),
     path("profile/update/<pk>/", ProfileUpdateView.as_view(), name="profile_update"),
     path("post/create/", PostCreateView.as_view(), name="post_create"),
