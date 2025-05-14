@@ -1,5 +1,7 @@
 {% extends "general/layout.html" %}
 
+{% load crispy_forms_tags %}
+
 {% block head_title %}Perfiles - InstaConquer{% endblock %}
 
 {% block page_content %}
@@ -14,19 +16,25 @@
             <p>Sin foto de perfil</p>
         {% endif %}
     </p>
+    <p>Siguiendo: {{ profile.following.count }}</p>
     <p>Seguidores: {{ profile.followers.count }}</p>
-    {% if profile not in request.user.profile.follower_set.all %}
-        <p>No lo estoy siguiendo</p>
-        <p>
-            <form action="" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="profile_pk" value="{{ profile.pk }}">
-                <button>Seguir</button>
+
+    {% if profile.user != request.user %}
+        <form action="" method="post">
+            {% csrf_token %}
+            {{form.profile_pk|as_crispy_field}}
+            {% if follower %}
+                <button type="submit">Dejar de Seguir</button>
+            {% else %}
+                <button type="submit"> Seguir</button>
             </form>
+            {% endif %}
     {% endif %}
     {% if profile.user == request.user %}
         <button><a href="{% url 'profile_update' profile.pk %}">Editar</a></button>
     {% endif %}
+
+
     <section>
         <h2>Publicaciones</h2>
         <div class="row">

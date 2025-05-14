@@ -12,7 +12,7 @@ from  django.contrib.auth.models import User
 from .forms import RegistrationForm, LoginForm, ProfileFollow
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
-from profiles.models import UserProfile
+from profiles.models import UserProfile, Follow
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from posts.models import Post
@@ -23,8 +23,14 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(HomeView, self).get_context_data(**kwargs)
-        
-        last_posts = Post.objects.all().order_by('-created_at')[:5]
+        #Si el usuario está logueado
+        if self.request.user.is_authenticated:
+            # Obtenemos los usuarios que seguimos
+            seguidos = Follow.objects.filter(following = self.request.user.profile).values_list("follower__user", flat=True)
+            print(seguidos)
+            last_posts = Post.objects.filter(user__profile__user__in=seguidos)
+        else:
+            last_posts = Post.objects.all().order_by('-created_at')[:5]
         context['last_posts'] = last_posts
 
         return context
@@ -48,7 +54,6 @@ class LoginView(FormView):
             return super(LoginView, self).form_invalid(form)
 
 
-
 class RegisterView(CreateView):
     template_name = "general/register.html"
     model = User
@@ -67,13 +72,33 @@ class ProfileDetailView(DetailView, FormView):
     context_object_name = 'profile'
     form_class= ProfileFollow
 
+    # Selecciona el perfil sobre el que se esta haciendo la accion para que el formulario ya lo sepa
+    def get_initial(self):
+        self.initial["profile_pk"] = self.get_object().pk
+        return super().get_initial()
+
     def form_valid(self, form):
         profile_pk = form.cleaned_data.get("profile_pk")
-        profile = UserProfile.objects.get(pk=profile_pk)
-        self.request.user.profile.follow(profile)
+        follower = UserProfile.objects.get(pk=profile_pk)
+
+        if Follow.objects.filter(following= self.request.user.profile, follower= follower).count():
+            Follow.objects.filter(following= self.request.user.profile, follower= follower).delete()
+            messages.add_message(self.request, messages.SUCCESS, f'Se ha dejado de seguir al usuario {follower.user.username}')
+        else:
+            Follow.objects.get_or_create(following= self.request.user.profile, follower= follower)
+            messages.add_message(self.request, messages.SUCCESS, f'Se ha seguido al usuario {follower.user.username}')
         
-        messages.add_message(self.request, messages.SUCCESS, 'Has seguido a este usuario')
-        return HttpResponseRedirect(reverse('profile_detail', kwargs={'pk': self.request.user.profile.pk}))
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return reverse("profile_detail", args=[self.get_object().pk])
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        follower = Follow.objects.filter(following= self.request.user.profile, follower= self.get_object()).exists()
+        context["follower"] = follower
+
+        return context
 
 
 @method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
@@ -84,6 +109,7 @@ class ProfileListView(ListView):
 
     def get_queryset(self):
         return UserProfile.objects.exclude(user=self.request.user)
+
 
 @method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
 class ProfileUpdateView(UpdateView):
@@ -113,7 +139,6 @@ class ProfileUpdateView(UpdateView):
 
 class LegalView(TemplateView):
     template_name = "general/legal.html"
-
 
 
 class ContactView(TemplateView):
