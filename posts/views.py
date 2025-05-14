@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.views.generic.detail import DetailView
+from django.http import JsonResponse
 
 
 @method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
@@ -40,3 +41,25 @@ def like_post(request, pk):
 
     return HttpResponseRedirect(reverse("post_detail", args=[pk]))
     
+
+@login_required
+def like_post_ajax(request, pk):
+    post = Post.objects.get(pk=pk)
+    if request.user in post.likes.all():
+        post.likes.remove(request.user)
+        return JsonResponse(
+            {
+                'message': "Ya no me gusta esta publicación",
+                'liked':False,
+                'nLikes': post.likes.all().count()
+            }
+        )
+    else:
+        post.likes.add(request.user)
+        return JsonResponse(
+            {
+                'message': "Te gusta esta publicación",
+                'liked':True,
+                'nLikes': post.likes.all().count()
+            }
+        )
