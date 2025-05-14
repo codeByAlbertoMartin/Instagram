@@ -20,7 +20,7 @@ from .views import HomeView, LoginView, RegisterView, LegalView, \
     ContactView, logout_view, ProfileDetailView, ProfileUpdateView, ProfileListView
 from django.conf.urls.static import static
 from django.conf import settings # type: ignore
-from posts.views import PostCreateView
+from posts.views import PostCreateView, PostDetailView, like_post
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,5 +33,7 @@ urlpatterns = [
     path('profile/<pk>/', ProfileDetailView.as_view(), name='profile_detail'),
     path("profile/update/<pk>/", ProfileUpdateView.as_view(), name="profile_update"),
     path("post/create/", PostCreateView.as_view(), name="post_create"),
+    path("post/like/<pk>", like_post, name="post_like"),
+    path("post/<pk>/", PostDetailView.as_view(), name="post_detail"),
     path('contact/', ContactView.as_view(), name='contact'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
