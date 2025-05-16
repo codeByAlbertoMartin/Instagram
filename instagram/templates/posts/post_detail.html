@@ -28,6 +28,7 @@
                 <img class="img-fluid img-responsive" src="{{post.image.url}}">
             </div>
             <div class="text-center">
+                {% if request.user.is_authenticated %}
                 <p> 
                     <a href="{% url 'post_like_ajax' post.pk%}" class="likeButton">
                         <span id="nLikes">{{ post.likes.all.count }}</span>
@@ -38,6 +39,7 @@
                         {% endif %}
                     </a>
                 </p>
+                {% endif %}
             </div>
         </article>    
     </div>

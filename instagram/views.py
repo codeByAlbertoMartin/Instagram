@@ -26,7 +26,7 @@ class HomeView(TemplateView):
         #Si el usuario está logueado
         if self.request.user.is_authenticated:
             # Obtenemos los usuarios que seguimos
-            seguidos = Follow.objects.filter(following = self.request.user.profile).values_list("follower__user", flat=True)
+            seguidos = Follow.objects.filter(following = self.request.user.profile).values_list("follower__user", flat=True) # type: ignore
             print(seguidos)
             last_posts = Post.objects.filter(user__profile__user__in=seguidos)
         else:
@@ -81,11 +81,11 @@ class ProfileDetailView(DetailView, FormView):
         profile_pk = form.cleaned_data.get("profile_pk")
         follower = UserProfile.objects.get(pk=profile_pk)
 
-        if Follow.objects.filter(following= self.request.user.profile, follower= follower).count():
-            Follow.objects.filter(following= self.request.user.profile, follower= follower).delete()
+        if Follow.objects.filter(following= self.request.user.profile, follower= follower).count(): # type: ignore
+            Follow.objects.filter(following= self.request.user.profile, follower= follower).delete() # type: ignore
             messages.add_message(self.request, messages.SUCCESS, f'Se ha dejado de seguir al usuario {follower.user.username}')
         else:
-            Follow.objects.get_or_create(following= self.request.user.profile, follower= follower)
+            Follow.objects.get_or_create(following= self.request.user.profile, follower= follower)# type: ignore
             messages.add_message(self.request, messages.SUCCESS, f'Se ha seguido al usuario {follower.user.username}')
         
         return super().form_valid(form)
@@ -95,20 +95,21 @@ class ProfileDetailView(DetailView, FormView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        follower = Follow.objects.filter(following= self.request.user.profile, follower= self.get_object()).exists()
+        follower = Follow.objects.filter(following= self.request.user.profile, follower= self.get_object()).exists() # type: ignore
         context["follower"] = follower
 
         return context
 
 
-@method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
 class ProfileListView(ListView):
     template_name = "general/profile_list.html"
     model=UserProfile
     context_object_name = 'profiles'
 
     def get_queryset(self):
-        return UserProfile.objects.exclude(user=self.request.user)
+        if self.request.user.is_authenticated:
+            return UserProfile.objects.all().order_by('user__username').exclude(user=self.request.user)
+        return UserProfile.objects.all().order_by('user__username')
 
 
 @method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
@@ -124,14 +125,14 @@ class ProfileUpdateView(UpdateView):
         return super(ProfileUpdateView, self).form_valid(form)
     
     def get_success_url(self):
-        return reverse('profile_detail', kwargs={'pk': self.object.pk})
+        return reverse('profile_detail', kwargs={'pk': self.object.pk})# type: ignore
     
     #Sirve para comprobar si el usuario que quiere editar el perfil es el mismo que el que lo creó
     #Ademas redirecciona a la pagina de inicio si no es el mismo usuario, porque podria ser un fallo de seguridad si un
     #usuario intenta editar el perfil de otro usuario si conciera la URL
     def dispatch(self, request, *args, **kwargs):
         user_profile = self.get_object()
-        if user_profile.user != self.request.user:
+        if user_profile.user != self.request.user:# type: ignore
             messages.add_message(request, messages.ERROR, 'No tienes permiso para editar este perfil')
             return HttpResponseRedirect(reverse('home'))
         return super().dispatch(request, *args, **kwargs)
