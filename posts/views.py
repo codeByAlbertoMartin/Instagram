@@ -22,8 +22,6 @@ class PostCreateView(CreateView):
         messages.add_message(self.request, messages.SUCCESS, 'Post creado correctamente')
         return super(PostCreateView, self).form_valid(form)
 
-
-@method_decorator(login_required, name='dispatch')# Proteger la vista para que solo los usuarios logueados puedan acceder
 class PostDetailView(DetailView):
     model=Post
     template_name="posts/post_detail.html"
