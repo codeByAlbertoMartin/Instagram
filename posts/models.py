@@ -17,6 +17,12 @@ class Post(models.Model):
 
     def __str__(self):
         return f"Post de {self.user.username} - {self.created_at}"    
+
+    def like(self, userProfile):
+        self.likes.add(userProfile)
+    
+    def unlike(self, userProfile):
+        self.likes.remove(userProfile)
     
 class Comment(models.Model):
     post= models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
