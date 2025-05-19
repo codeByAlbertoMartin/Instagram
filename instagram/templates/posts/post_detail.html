@@ -1,4 +1,5 @@
 {% extends "general/layout.html" %}
+{% load crispy_forms_tags %}
 
 {% block head_title %}Bienvenidos a nuestro InstaConquer{% endblock%}
 
@@ -6,7 +7,7 @@
 <div class="container">
     <h1>Detalles de la publicación</h1>
     <div class="row">
-        <article class="col-md-4 ">
+        <article class="col-md-4 bg-light p-3">
             <div>
                 <div class="d-flex flex-row justify-content-between align-items-center p-2 border-bottom">
                     <div class="d-flex flex-row align-items-center feed-text px-2">
@@ -39,7 +40,45 @@
                         {% endif %}
                     </a>
                 </p>
+                
                 {% endif %}
+            </div>
+            <section class="comments p-2 px-3">
+                <h5>Comentarios</h5>
+                {% if post.comments.all.count %}
+                    {% for comment in post.comments.all%}
+                        <article>
+                            <header>
+                                Autor: {{comment.user}} Creado {{comment.created_at}}
+                            </header>
+                            <div>
+                                <p>{{comment.text}}</p>
+                            </div>
+                        </article>
+                    {% endfor%}
+                {% else %}
+                    <p>Todavia no hay comentarios</p>
+                {% endif %}
+            </section>
+            <div>
+                <details>
+                    <summary>
+                        Nuevo comentarios
+                    </summary>
+                    <p>
+                        <form action="" method="post">
+                            <div class="row">
+                                <div class="col col-12">
+                                    {% csrf_token %}
+                                    {{form.text|as_crispy_field}}
+                                </div>
+                                <div class="col col-12">
+                                    <button class="btn btn-sm btn-primary">Publicar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </p>
+                </details>
             </div>
         </article>    
     </div>

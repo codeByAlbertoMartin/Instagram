@@ -21,7 +21,7 @@ class Post(models.Model):
 class Comment(models.Model):
     post= models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
-    text= models.TextField("Comentario", max_length=255)
+    text= models.TextField("Contenido del comentario", max_length=255)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
 
     class Meta:
@@ -29,4 +29,4 @@ class Comment(models.Model):
         verbose_name_plural = "Comentarios"
 
     def __str__(self):
-        return f"Comentario de {self.user.username} en {self.post.id}"
+        return f"Comentario de {self.user.username} en {self.post.id}" # type: ignore
