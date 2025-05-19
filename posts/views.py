@@ -45,9 +45,10 @@ def like_post(request, pk):
     post = Post.objects.get(pk=pk)
     if request.user in post.likes.all():
         messages.add_message(request, messages.INFO, "Ya no me gusta la publicación")
-        post.likes.remove(request.user)
+        post.unlike(request.user)
+        #post.likes.remove(request.user)
     else:
-        post.likes.add(request.user)
+        post.like(request.user)
         messages.add_message(request, messages.INFO, "Te gusta la publicación")
 
     return HttpResponseRedirect(reverse("post_detail", args=[pk]))
@@ -58,6 +59,7 @@ def like_post_ajax(request, pk):
     post = Post.objects.get(pk=pk)
     if request.user in post.likes.all():
         post.likes.remove(request.user)
+        #request.user.profile.unlike_post(post)
         return JsonResponse(
             {
                 'message': "Ya no me gusta esta publicación",
@@ -67,6 +69,7 @@ def like_post_ajax(request, pk):
         )
     else:
         post.likes.add(request.user)
+        #request.user.profile.like_post(post)
         return JsonResponse(
             {
                 'message': "Te gusta esta publicación",

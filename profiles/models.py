@@ -23,8 +23,15 @@ class UserProfile(models.Model):
         return self.user.username
     
     def follow(self,profile):
-        Follow.objects.get_or_create(follower=self, following=profile) 
+        Follow.objects.get_or_create(follower=self, following=profile)
 
+    #Comentado en las vistas de like_post_ajax, es otra forma de hacer las cosas, pero que funciona. Se basa en crear las funciones dentro de los
+    #modelos para que sea todo más compacto y al hacer cambios en el modelo, no se vea afectada la vista
+    def like_post(self, post):
+        post.like(self.user)
+
+    def unlike_post(self, post):
+        post.unlike(self.user)
 
 class Follow(models.Model):
     follower = models.ForeignKey(UserProfile, verbose_name="¿Quién sigue?", on_delete=models.CASCADE, related_name='follower_set')
